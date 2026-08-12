@@ -1,46 +1,58 @@
 import { useEffect, useState } from 'react';
 import Header from './components/Header';
+import { useSeo, PAGE_SEO } from './hooks/useSeo';
 import Hero from './components/Hero';
 import Courses from './components/Courses';
 import WhyChoose from './components/WhyChoose';
 import HowYouLearn from './components/HowYouLearn';
 import FinalCTA from './components/FinalCTA';
 import Footer from './components/Footer';
-import WhatsAppButton from './components/WhatsAppButton';
 import AboutPage from './components/about/AboutPage';
 import CorporateTrainingPage from './components/corporate/CorporateTrainingPage';
+import ContactPage from './components/contact/ContactPage';
 
-function useHashRoute() {
-  const [route, setRoute] = useState(() => window.location.hash.replace(/^#\/?/, ''));
+function usePathRoute() {
+  const [path, setPath] = useState(() => window.location.pathname);
 
   useEffect(() => {
-    const onHashChange = () => {
-      setRoute(window.location.hash.replace(/^#\/?/, ''));
+    const onPopState = () => {
+      setPath(window.location.pathname);
       window.scrollTo(0, 0);
     };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  return route;
+  return path;
+}
+
+export function navigate(to: string) {
+  window.history.pushState({}, '', to);
+  window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 function App() {
-  const route = useHashRoute();
+  const path = usePathRoute();
+  const route = path.replace(/^\//, '');
+  const seoConfig = PAGE_SEO[route] ?? PAGE_SEO.home;
+  useSeo(seoConfig);
 
   const renderPage = () => {
-    if (route === 'about') {
+    if (route === 'about') return <AboutPage />;
+    if (route === 'corporate-training') return <CorporateTrainingPage />;
+    if (route === 'contact') return <ContactPage />;
+    if (route === 'courses') {
       return (
         <>
-          <AboutPage />
+          <main><Courses /></main>
           <div aria-hidden className="h-12 sm:h-20" />
         </>
       );
     }
-    if (route === 'corporate-training') {
+    if (route === 'learning-options') {
       return (
         <>
-          <CorporateTrainingPage />
+          <main><HowYouLearn /></main>
           <div aria-hidden className="h-12 sm:h-20" />
         </>
       );
@@ -64,7 +76,6 @@ function App() {
       <Header />
       {renderPage()}
       <Footer />
-      <WhatsAppButton />
     </div>
   );
 }

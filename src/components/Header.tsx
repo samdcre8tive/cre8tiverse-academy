@@ -1,68 +1,62 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Menu, X, Home, BookOpen, Info, Building2, Laptop } from 'lucide-react';
+import { Menu, X, Home, BookOpen, Info, Building2, Laptop, MessageCircle } from 'lucide-react';
 import Button from './ui/Button';
+import { navigate } from '../App';
 
 const navLinks = [
-  { label: 'Home', href: '#home', Icon: Home },
-  { label: 'Courses', href: '#courses', Icon: BookOpen },
-  { label: 'Learning Options', href: '#learning-options', Icon: Laptop },
-  { label: 'About Us', href: '#/about', Icon: Info },
-  { label: 'Corporate Training', href: '#/corporate-training', Icon: Building2 },
+  { label: 'Home', href: '/', Icon: Home },
+  { label: 'Courses', href: '/courses', Icon: BookOpen },
+  { label: 'Learning Options', href: '/learning-options', Icon: Laptop },
+  { label: 'About Us', href: '/about', Icon: Info },
+  { label: 'Corporate Training', href: '/corporate-training', Icon: Building2 },
+  { label: 'Contact Us', href: '/contact', Icon: MessageCircle },
 ];
 
 const APPLICATION_FORM_URL = 'https://forms.gle/cQ1HY477y55KoirbA';
 
-const PAGE_ROUTES: Record<string, string> = {
-  about: 'About Us',
-  'corporate-training': 'Corporate Training',
-};
+const PAGE_ROUTES = ['about', 'corporate-training', 'contact'];
 
-const HOME_SECTION_IDS = ['home', 'courses', 'learning-options'];
-const SECTION_LABEL: Record<string, string> = {
-  home: 'Home',
-  courses: 'Courses',
-  'learning-options': 'Learning Options',
-};
-
-function currentPage() {
-  return window.location.hash.replace(/^#\/?/, '');
+function currentRoute() {
+  return window.location.pathname.replace(/^\//, '');
 }
 
-function isHashPage() {
-  return currentPage() in PAGE_ROUTES;
+function isStandalonePage() {
+  return PAGE_ROUTES.includes(currentRoute());
 }
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [page, setPage] = useState(() => currentPage());
-  const [activeNav, setActiveNav] = useState(() => PAGE_ROUTES[currentPage()] ?? 'Home');
+  const [page, setPage] = useState(() => currentRoute());
+  const [activeNav, setActiveNav] = useState(() => {
+    const r = currentRoute();
+    const link = navLinks.find((l) => l.href === `/${r}`);
+    return link ? link.label : 'Home';
+  });
 
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 });
 
-  // Scroll shadow
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Route + active-state sync on hash change
   useEffect(() => {
-    const onHashChange = () => {
-      const p = currentPage();
-      setPage(p);
-      const label = PAGE_ROUTES[p];
-      if (label) setActiveNav(label);
+    const onPopState = () => {
+      const r = currentRoute();
+      setPage(r);
+      const link = navLinks.find((l) => l.href === `/${r}`);
+      setActiveNav(link ? link.label : 'Home');
     };
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   // Scroll-spy: slide active pill across Home sections
   useEffect(() => {
-    if (page) return; // only on the Home page
+    if (page) return;
     const visible = new Set<string>();
     const observer = new IntersectionObserver(
       (entries) => {
@@ -70,19 +64,21 @@ export default function Header() {
           if (e.isIntersecting) visible.add(e.target.id);
           else visible.delete(e.target.id);
         });
-        const pick = HOME_SECTION_IDS.filter((id) => visible.has(id)).pop();
-        if (pick) setActiveNav(SECTION_LABEL[pick]);
+        const pick = ['home', 'courses', 'learning-options'].filter((id) => visible.has(id)).pop();
+        if (pick) {
+          const label = { home: 'Home', courses: 'Courses', 'learning-options': 'Learning Options' }[pick];
+          if (label) setActiveNav(label);
+        }
       },
       { rootMargin: '-45% 0px -50% 0px', threshold: 0 },
     );
-    HOME_SECTION_IDS.forEach((id) => {
+    ['home', 'courses', 'learning-options'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
   }, [page]);
 
-  // Position the sliding pill under the active item
   useLayoutEffect(() => {
     const idx = navLinks.findIndex((l) => l.label === activeNav);
     const li = itemRefs.current[idx];
@@ -90,7 +86,6 @@ export default function Header() {
     else setPill((p) => ({ ...p, opacity: 0 }));
   }, [activeNav]);
 
-  // Recompute pill position on resize
   useEffect(() => {
     const onResize = () => {
       const idx = navLinks.findIndex((l) => l.label === activeNav);
@@ -105,19 +100,21 @@ export default function Header() {
     setActiveNav(label);
     setMobileOpen(false);
 
-    if (href.startsWith('#/')) {
-      window.location.hash = href.slice(1);
+    if (href === '/') {
+      if (isStandalonePage()) {
+        navigate('/');
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       return;
     }
 
-    if (isHashPage()) {
-      window.location.hash = '';
-      setTimeout(() => {
-        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
-      }, 200);
-    } else {
-      document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+    if (href === '/courses' || href === '/learning-options') {
+      navigate(href);
+      return;
     }
+
+    navigate(href);
   };
 
   const handleApplyNow = () => {
@@ -133,12 +130,11 @@ export default function Header() {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
           <a
-            href="#home"
+            href="/"
             onClick={(e) => {
               e.preventDefault();
-              handleNavClick('Home', '#home');
+              handleNavClick('Home', '/');
             }}
             className="flex items-center gap-2 shrink-0"
           >
@@ -149,7 +145,6 @@ export default function Header() {
             />
           </a>
 
-          {/* Desktop nav with sliding pill */}
           <ul className="hidden lg:flex items-center gap-1 relative">
             <div
               aria-hidden
@@ -182,14 +177,12 @@ export default function Header() {
             })}
           </ul>
 
-          {/* Desktop CTA */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block ml-8">
             <Button onClick={handleApplyNow} variant="secondary" className="px-7 py-3 text-sm">
               Apply Now
             </Button>
           </div>
 
-          {/* Mobile toggle */}
           <button
             className="lg:hidden p-2 text-brand-blue"
             onClick={() => setMobileOpen((v) => !v)}
@@ -199,7 +192,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile menu */}
         {mobileOpen && (
           <div className="lg:hidden border-t border-gray-100 py-4 animate-fade-up">
             <ul className="flex flex-col gap-1">

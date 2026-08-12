@@ -8,21 +8,24 @@ import {
   Twitter,
   Linkedin,
 } from 'lucide-react';
+import { navigate } from '../App';
 
 const quickLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'Courses', href: '#courses' },
-  { label: 'About Us', href: '#/about' },
-  { label: 'Corporate Training', href: '#corporate-training' },
+  { label: 'Home', href: '/' },
+  { label: 'Courses', href: '/courses' },
+  { label: 'Learning Options', href: '/learning-options' },
+  { label: 'About Us', href: '/about' },
+  { label: 'Corporate Training', href: '/corporate-training' },
+  { label: 'Contact Us', href: '/contact' },
 ];
 
-const socials = [
+export const socials = [
   { name: 'Facebook', href: 'https://web.facebook.com/cre8tiverse/', Icon: Facebook },
   { name: 'Instagram', href: 'https://www.instagram.com/cre8tiverse/', Icon: Instagram },
-  { name: 'YouTube', href: 'https://www.youtube.com/@cre8tiverse', Icon: Youtube },
   { name: 'X (Twitter)', href: 'https://twitter.com/cre8tiverse', Icon: Twitter },
-  { name: 'TikTok', href: 'https://www.tiktok.com/@cre8tiverse', Icon: TikTokIcon },
   { name: 'LinkedIn', href: 'https://www.linkedin.com/company/cre8tiverse', Icon: Linkedin },
+  { name: 'YouTube', href: 'https://www.youtube.com/@cre8tiverse', Icon: Youtube },
+  { name: 'TikTok', href: 'https://www.tiktok.com/@cre8tiverse', Icon: TikTokIcon },
 ];
 
 function TikTokIcon({ size = 18 }: { size?: number }) {
@@ -54,13 +57,13 @@ export default function Footer() {
               alt="Cre8tiverse Academy logo"
               className="block mx-auto h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] lg:h-[80px] lg:w-[80px] object-contain mb-4"
             />
-            <p className="text-white font-bold text-base sm:text-lg lg:text-xl">
+            <p className="text-center text-white font-bold text-base sm:text-lg lg:text-xl">
               Cre8tiverse Academy
             </p>
-            <p className="mt-3 text-sm text-white/70 leading-relaxed">
+            <p className="mt-3 text-center text-sm text-white/70 leading-relaxed">
               Preparing Africa's next generation of digital professionals.
             </p>
-            <p className="mt-3 text-sm font-semibold text-brand-orange">
+            <p className="mt-3 text-center text-sm font-semibold text-brand-orange">
               Innovate. Create. Inspire.
             </p>
           </div>
@@ -75,6 +78,10 @@ export default function Footer() {
                 <li key={link.label}>
                   <a
                     href={link.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(link.href);
+                    }}
                     className="text-sm text-white/70 hover:text-brand-orange transition-colors duration-200"
                   >
                     {link.label}
@@ -97,19 +104,19 @@ export default function Footer() {
               <li className="flex items-start gap-3 text-sm text-white/70">
                 <Mail size={18} className="shrink-0 mt-0.5 text-brand-orange" />
                 <a
-                  href="mailto:cre8tiverse@gmail.com"
+                  href="mailto:info@cre8tiverse.com"
                   className="hover:text-brand-orange transition-colors"
                 >
-                  cre8tiverse@gmail.com
+                  info@cre8tiverse.com
                 </a>
               </li>
               <li className="flex items-start gap-3 text-sm text-white/70">
                 <Phone size={18} className="shrink-0 mt-0.5 text-brand-orange" />
                 <a
-                  href="tel:+2348065353480"
+                  href="tel:+2348024167522"
                   className="hover:text-brand-orange transition-colors"
                 >
-                  +234 806 535 3480
+                  +234 802 416 7522
                 </a>
               </li>
             </ul>
@@ -120,7 +127,7 @@ export default function Footer() {
             <h4 className="text-sm font-bold uppercase tracking-wider text-white mb-5">
               Follow Us
             </h4>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-3 gap-3">
               {socials.map((social) => {
                 const Icon = social.Icon;
                 return (
