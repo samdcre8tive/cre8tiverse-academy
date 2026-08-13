@@ -3,18 +3,32 @@ import { Menu, X, Home, BookOpen, Info, Building2, Laptop, MessageCircle } from 
 import Button from './ui/Button';
 import { navigate } from '../App';
 
-const navLinks = [
-  { label: 'Home', href: '/', Icon: Home },
-  { label: 'Courses', href: '/courses', Icon: BookOpen },
-  { label: 'Learning Options', href: '/learning-options', Icon: Laptop },
-  { label: 'About Us', href: '/about', Icon: Info },
-  { label: 'Corporate Training', href: '/corporate-training', Icon: Building2 },
-  { label: 'Contact Us', href: '/contact', Icon: MessageCircle },
+type NavEntry = {
+  label: string;
+  href: string;
+  Icon: typeof Home;
+  section?: string;
+  isPage?: boolean;
+};
+
+const navLinks: NavEntry[] = [
+  { label: 'Home', href: '/', Icon: Home, section: 'home' },
+  { label: 'Courses', href: '/#courses', Icon: BookOpen, section: 'courses' },
+  { label: 'Learning Options', href: '/#learning-options', Icon: Laptop, section: 'learning-options' },
+  { label: 'About Us', href: '/about', Icon: Info, isPage: true },
+  { label: 'Corporate Training', href: '/corporate-training', Icon: Building2, isPage: true },
+  { label: 'Contact Us', href: '/contact', Icon: MessageCircle, isPage: true },
 ];
 
 const APPLICATION_FORM_URL = 'https://forms.gle/cQ1HY477y55KoirbA';
 
 const PAGE_ROUTES = ['about', 'corporate-training', 'contact'];
+
+const SECTION_LABELS: Record<string, string> = {
+  home: 'Home',
+  courses: 'Courses',
+  'learning-options': 'Learning Options',
+};
 
 function currentRoute() {
   return window.location.pathname.replace(/^\//, '');
@@ -22,6 +36,15 @@ function currentRoute() {
 
 function isStandalonePage() {
   return PAGE_ROUTES.includes(currentRoute());
+}
+
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 export default function Header() {
@@ -36,6 +59,8 @@ export default function Header() {
 
   const itemRefs = useRef<(HTMLLIElement | null)[]>([]);
   const [pill, setPill] = useState({ left: 0, width: 0, opacity: 0 });
+
+  const pendingScroll = useRef<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -66,7 +91,7 @@ export default function Header() {
         });
         const pick = ['home', 'courses', 'learning-options'].filter((id) => visible.has(id)).pop();
         if (pick) {
-          const label = { home: 'Home', courses: 'Courses', 'learning-options': 'Learning Options' }[pick];
+          const label = SECTION_LABELS[pick];
           if (label) setActiveNav(label);
         }
       },
@@ -77,6 +102,28 @@ export default function Header() {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
+  }, [page]);
+
+  // After navigating home for a section scroll, perform the scroll once the DOM is ready
+  useEffect(() => {
+    if (page || !pendingScroll.current) return;
+    const id = pendingScroll.current;
+    pendingScroll.current = null;
+
+    const el = document.getElementById(id);
+    if (el) {
+      requestAnimationFrame(() => scrollToSection(id));
+    } else {
+      const tryScroll = () => {
+        if (document.getElementById(id)) {
+          scrollToSection(id);
+        } else {
+          requestAnimationFrame(tryScroll);
+        }
+      };
+      requestAnimationFrame(tryScroll);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   useLayoutEffect(() => {
@@ -96,25 +143,31 @@ export default function Header() {
     return () => window.removeEventListener('resize', onResize);
   }, [activeNav]);
 
-  const handleNavClick = (label: string, href: string) => {
-    setActiveNav(label);
+  const handleNavClick = (entry: NavEntry) => {
+    setActiveNav(entry.label);
     setMobileOpen(false);
 
-    if (href === '/') {
-      if (isStandalonePage()) {
-        navigate('/');
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-      return;
-    }
+    const { href, section, isPage } = entry;
 
-    if (href === '/courses' || href === '/learning-options') {
+    // Independent pages: navigate directly
+    if (isPage) {
       navigate(href);
       return;
     }
 
-    navigate(href);
+    // Home / Courses / Learning Options — all live on the homepage
+    const targetSection = section ?? 'home';
+
+    if (isStandalonePage()) {
+      pendingScroll.current = targetSection;
+      navigate('/');
+    } else {
+      if (targetSection === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        scrollToSection(targetSection);
+      }
+    }
   };
 
   const handleApplyNow = () => {
@@ -134,7 +187,7 @@ export default function Header() {
             href="/"
             onClick={(e) => {
               e.preventDefault();
-              handleNavClick('Home', '/');
+              handleNavClick(navLinks[0]);
             }}
             className="flex items-center gap-2 shrink-0"
           >
@@ -157,7 +210,7 @@ export default function Header() {
               return (
                 <li key={link.label} ref={(el) => (itemRefs.current[i] = el)}>
                   <button
-                    onClick={() => handleNavClick(link.label, link.href)}
+                    onClick={() => handleNavClick(link)}
                     className={`relative z-10 flex items-center gap-2 px-5 py-2.5 text-[15px] rounded-full font-medium transition-colors duration-300 ease-out ${
                       isActive
                         ? 'text-white font-semibold'
@@ -201,7 +254,7 @@ export default function Header() {
                 return (
                   <li key={link.label}>
                     <button
-                      onClick={() => handleNavClick(link.label, link.href)}
+                      onClick={() => handleNavClick(link)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-full text-sm font-medium transition-all duration-300 ease-out ${
                         isActive
                           ? 'bg-brand-orange text-white font-semibold shadow-soft'

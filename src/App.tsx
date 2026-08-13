@@ -41,22 +41,6 @@ function App() {
     if (route === 'about') return <AboutPage />;
     if (route === 'corporate-training') return <CorporateTrainingPage />;
     if (route === 'contact') return <ContactPage />;
-    if (route === 'courses') {
-      return (
-        <>
-          <main><Courses /></main>
-          <div aria-hidden className="h-12 sm:h-20" />
-        </>
-      );
-    }
-    if (route === 'learning-options') {
-      return (
-        <>
-          <main><HowYouLearn /></main>
-          <div aria-hidden className="h-12 sm:h-20" />
-        </>
-      );
-    }
     return (
       <>
         <main>

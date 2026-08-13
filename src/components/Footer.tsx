@@ -127,7 +127,7 @@ export default function Footer() {
             <h4 className="text-sm font-bold uppercase tracking-wider text-white mb-5">
               Follow Us
             </h4>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-nowrap gap-2 sm:grid sm:grid-cols-3 sm:gap-3">
               {socials.map((social) => {
                 const Icon = social.Icon;
                 return (
@@ -137,9 +137,9 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.name}
-                    className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:text-brand-orange hover:border-brand-orange hover:bg-white/5 transition-all duration-200"
+                    className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:text-brand-orange hover:border-brand-orange hover:bg-white/5 transition-all duration-200"
                   >
-                    <Icon size={18} />
+                    <Icon size={16} className="sm:!w-[18px] sm:!h-[18px]" />
                   </a>
                 );
               })}
