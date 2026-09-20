@@ -53,7 +53,7 @@ export default function Footer() {
           {/* Brand column */}
           <div className="lg:col-span-1">
             <img
-              src="https://i.imgur.com/pb6rmMm.png"
+              src="https://i.imgur.com/vjlX30P.png"
               alt="Cre8tiverse Academy logo"
               className="block mx-auto h-[60px] w-[60px] sm:h-[70px] sm:w-[70px] lg:h-[80px] lg:w-[80px] object-contain mb-4"
             />
