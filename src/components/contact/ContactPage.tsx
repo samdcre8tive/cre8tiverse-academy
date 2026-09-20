@@ -24,7 +24,7 @@ const contactOptions = [
     title: 'WhatsApp',
     description: 'Chat with our team for quick responses to your enquiries.',
     icon: MessageCircle,
-    href: 'https://wa.link/al8pui',
+    href: 'https://wa.link/a1fcmi',
   },
   {
     title: 'Schedule a Consultation',
