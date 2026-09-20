@@ -192,7 +192,7 @@ export default function Header() {
             className="flex items-center gap-2 shrink-0"
           >
             <img
-              src="https://i.imgur.com/vjlX30P.png"
+              src="https://i.imgur.com/uHJkJap.png"
               alt="Cre8tiverse Academy logo"
               className="h-9 lg:h-11 w-auto"
             />
